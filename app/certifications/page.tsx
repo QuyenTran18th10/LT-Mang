@@ -1,13 +1,10 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Navbar } from "@/components/navbar"
-import { Upload, X, Award, FileText } from "lucide-react"
+import { Award, FileText } from "lucide-react"
 
 interface Certification {
   id: string
@@ -19,13 +16,29 @@ interface Certification {
 }
 
 export default function CertificationsPage() {
-  const [certifications, setCertifications] = useState<Certification[]>([
+  const [certifications] = useState<Certification[]>([
     {
       id: "1",
-      name: "Chứng chỉ mẫu",
-      issuer: "Tổ chức cấp chứng chỉ",
-      date: "12/2024",
-      imageUrl: "/formal-certificate.png",
+      name: "JavaScript Essentials 1",
+      issuer: "Cisco Networking Academy & OpenEDG JavaScript Institute",
+      date: "11/19/2025",
+      imageUrl: "/javascript-essentials-1.jpg",
+      fileType: "image",
+    },
+    {
+      id: "2",
+      name: "Networking Basics",
+      issuer: "Cisco Networking Academy",
+      date: "11/25/2025",
+      imageUrl: "/networking-basics.jpg",
+      fileType: "image",
+    },
+    {
+      id: "3",
+      name: "JavaScript Essentials 2",
+      issuer: "Cisco Networking Academy & OpenEDG JavaScript Institute",
+      date: "11/25/2025",
+      imageUrl: "/javascript-essentials-2.jpg",
       fileType: "image",
     },
   ])
@@ -34,57 +47,8 @@ export default function CertificationsPage() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    const savedCerts = localStorage.getItem("userCertifications")
-    if (savedCerts) {
-      try {
-        setCertifications(JSON.parse(savedCerts))
-      } catch (error) {
-        console.error("Failed to load certifications:", error)
-      }
-    }
     setMounted(true)
   }, [])
-
-  useEffect(() => {
-    if (mounted) {
-      localStorage.setItem("userCertifications", JSON.stringify(certifications))
-    }
-  }, [certifications, mounted])
-
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
-
-    const file = files[0]
-    const isPdf = file.type === "application/pdf"
-    const isImage = file.type.startsWith("image/")
-
-    if (!isPdf && !isImage) {
-      alert("Vui lòng chọn tệp PDF hoặc hình ảnh")
-      return
-    }
-
-    const reader = new FileReader()
-    reader.onload = () => {
-      const base64Data = reader.result as string
-
-      const newCert: Certification = {
-        id: Date.now().toString(),
-        name: file.name.replace(/\.[^/.]+$/, ""),
-        issuer: "Nhập tên tổ chức",
-        date: new Date().toLocaleDateString("vi-VN", { month: "2-digit", year: "numeric" }),
-        imageUrl: base64Data, // Now stores Base64 string instead of blob URL
-        fileType: isPdf ? "pdf" : "image",
-      }
-
-      setCertifications([...certifications, newCert])
-    }
-    reader.readAsDataURL(file)
-  }
-
-  const removeCertification = (id: string) => {
-    setCertifications(certifications.filter((cert) => cert.id !== id))
-  }
 
   return (
     <div className="min-h-screen">
@@ -101,23 +65,6 @@ export default function CertificationsPage() {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Các chứng chỉ và thành tựu mà tôi đã đạt được trong hành trình học lập trình
             </p>
-          </div>
-
-          {/* Upload Button */}
-          <div className="flex justify-center">
-            <label htmlFor="cert-upload" className="cursor-pointer">
-              <div className="flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors">
-                <Upload className="h-5 w-5" />
-                <span className="font-medium">Upload Chứng chỉ</span>
-              </div>
-              <input
-                id="cert-upload"
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
           </div>
 
           {/* Certifications Grid */}
@@ -148,19 +95,12 @@ export default function CertificationsPage() {
                           src={cert.imageUrl || "/placeholder.svg"}
                           alt={cert.name}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement
+                            target.src = "/formal-certificate.png"
+                          }}
                         />
                       )}
-                      <Button
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          removeCertification(cert.id)
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
                     </div>
                   </CardHeader>
                   <CardContent className="p-4 space-y-2">
@@ -197,6 +137,10 @@ export default function CertificationsPage() {
                     src={selectedCert?.imageUrl || "/placeholder.svg"}
                     alt={selectedCert?.name}
                     className="w-full h-auto rounded-lg border"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement
+                      target.src = "/formal-certificate.png"
+                    }}
                   />
                 )}
               </div>

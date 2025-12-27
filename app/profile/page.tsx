@@ -1,16 +1,15 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useRef } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Navbar } from "@/components/navbar"
-import { Github, Mail, Upload, X, Coffee, Code2, Zap, Cpu, Wrench, FileJson } from "lucide-react"
+import { Github, Mail, Coffee, Code2, Zap, Cpu, Wrench, FileJson } from "lucide-react"
 
 const myInfo = {
   name: "Trần Văn Quyến",
   role: "Full-stack Developer",
+  avatar: "/avatar.png",
   bio: "Đam mê lập trình Java và JavaScript. Có kinh nghiệm xây dựng các ứng dụng web với Spring Boot, React và Next.js.",
   skills: [
     { name: "Java", icon: Coffee },
@@ -25,45 +24,16 @@ const myInfo = {
 }
 
 export default function ProfilePage() {
-  const [avatarImage, setAvatarImage] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
-
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith("image/")) {
-      setIsUploading(true)
-      const reader = new FileReader()
-      reader.onload = (event) => {
-        const imageData = event.target?.result as string
-        setAvatarImage(imageData)
-        localStorage.setItem("userAvatar", imageData)
-        setIsUploading(false)
-      }
-      reader.readAsDataURL(file)
-    }
-  }
-
-  const handleRemoveAvatar = () => {
-    setAvatarImage(null)
-    localStorage.removeItem("userAvatar")
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ""
-    }
-  }
+  const [avatarImage] = useState<string | null>(myInfo.avatar)
 
   const handleEmailClick = () => {
     window.location.href = `mailto:${myInfo.email}`
   }
 
   const [mounted, setMounted] = useState(false)
-  if (!mounted) {
-    const savedAvatar = localStorage.getItem("userAvatar")
-    if (savedAvatar) {
-      setAvatarImage(savedAvatar)
-    }
+  useEffect(() => {
     setMounted(true)
-  }
+  }, [])
 
   return (
     <div className="min-h-screen">
@@ -97,35 +67,16 @@ export default function ProfilePage() {
 
             <Card className="max-w-2xl mx-auto hover:border-primary transition-all duration-300">
               <CardHeader>
-                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center group cursor-pointer overflow-hidden">
+                <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-primary to-accent mx-auto mb-4 flex items-center justify-center overflow-hidden">
                   {avatarImage ? (
-                    <>
-                      <img
-                        src={avatarImage || "/placeholder.svg"}
-                        alt={myInfo.name}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Upload className="h-5 w-5 text-white" />
-                        <X className="h-5 w-5 text-white cursor-pointer" onClick={handleRemoveAvatar} />
-                      </div>
-                    </>
+                    <img
+                      src={avatarImage || "/placeholder.svg"}
+                      alt={myInfo.name}
+                      className="w-full h-full object-cover"
+                    />
                   ) : (
-                    <>
-                      <span className="text-5xl font-bold text-primary-foreground">{myInfo.name.charAt(0)}</span>
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <Upload className="h-5 w-5 text-white" />
-                      </div>
-                    </>
+                    <span className="text-5xl font-bold text-primary-foreground">{myInfo.name.charAt(0)}</span>
                   )}
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleAvatarUpload}
-                    disabled={isUploading}
-                    className="absolute inset-0 opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  />
                 </div>
 
                 <CardTitle className="text-2xl text-center">{myInfo.name}</CardTitle>
@@ -149,22 +100,32 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4 pt-4 justify-center">
+                {/* Email Card */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+                  <a
+                    href={`mailto:${myInfo.email}`}
+                    className="flex items-start gap-3 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer"
+                  >
+                    <Mail className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground font-medium">Email</p>
+                      <p className="text-sm font-medium break-all">{myInfo.email}</p>
+                    </div>
+                  </a>
+
+                  {/* GitHub Card */}
                   <a
                     href={myInfo.github}
-                    className="text-muted-foreground hover:text-primary transition-colors"
                     target="_blank"
                     rel="noopener noreferrer"
+                    className="flex items-start gap-3 p-4 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-all duration-300 cursor-pointer"
                   >
-                    <Github className="h-6 w-6" />
+                    <Github className="h-5 w-5 text-primary flex-shrink-0 mt-1" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-muted-foreground font-medium">GitHub</p>
+                      <p className="text-sm font-medium break-all">{myInfo.github.replace("https://", "")}</p>
+                    </div>
                   </a>
-                  <button
-                    onClick={handleEmailClick}
-                    className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                    title={myInfo.email}
-                  >
-                    <Mail className="h-6 w-6" />
-                  </button>
                 </div>
               </CardContent>
             </Card>
